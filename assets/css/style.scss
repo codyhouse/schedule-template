@@ -1,0 +1,561 @@
+@import '../../../../codyhouse-framework/main/assets/css/_global.scss'; // ⚠️ make sure to import the CodyHouse framework
+@import url('https://fonts.googleapis.com/css?family=Source+Sans+Pro:400,600'); // custom font
+
+// --------------------------------
+
+// Schedule Template - by CodyHouse.co
+
+// --------------------------------
+
+:root {
+  // colors
+  @include defineColorHSL(--cd-color-event-1, 199, 25%, 46%);   // Smalt Blue
+  @include defineColorHSL(--cd-color-event-2, 271, 23%, 26%);   // Martinique
+  @include defineColorHSL(--cd-color-event-3, 162, 14%, 68%);   // Edward
+  @include defineColorHSL(--cd-color-event-4, 31, 89%, 68%);    // Rajah
+  @include defineColorHSL(--cd-color-text, 0, 0%, 13%);         // Black
+  @include defineColorHSL(--cd-color-border, 0, 0%, 92%);       // Grey
+
+  // font
+  --font-primary: 'Source Sans Pro', sans-serif;
+
+  //schedule template
+  --schedule-rows-number: 19;
+  --schedule-rows-height: 50px;
+}
+
+body {
+	color: var(--cd-color-text);
+}
+
+a {
+	color: var(--cd-color-event-3);
+}
+
+.cd-schedule {
+	position: relative;
+
+	&::before { // never visible - this is used in js to check the current MQ
+		content: 'mobile';
+		display: none;
+	}
+  
+  .js & {
+  	@include breakpoint(md) {
+      width: calc(100% - 2*var(--component-padding));
+      margin-left: auto;
+      margin-right: auto;
+      max-width: var(--container-width-xl);
+
+  		&::before {
+  			content: 'desktop';
+  		}
+  	}
+  }
+}
+
+.cd-schedule__timeline { // events time
+	display: none;
+
+  .js & {
+  	@include breakpoint(md) {
+  		display: block;
+  		position: absolute;
+  		top: 0;
+  		left: 0;
+  		height: 100%;
+  		width: 100%;
+  		padding-top: var(--schedule-rows-height);
+
+  		li {
+  			position: relative;
+  			height: var(--schedule-rows-height);
+
+  			&::after { // this is used to create the table horizontal lines
+  				content: '';
+  				position: absolute;
+  				bottom: 0;
+  				left: 0;
+  				width: 100%;
+  				height: 1px;
+  				background: var(--cd-color-border);
+  			}
+
+  			&:last-of-type::after {
+  				display: none;
+  			}
+
+  			span {
+  				display: none;
+  			}
+  		}
+  	}
+
+  	@include breakpoint(lg) {
+  		li {
+
+  			&::after {
+  				width: calc(100% - 60px);
+  				left: 60px;
+  			}
+
+  			span {
+  				display: inline-block;
+  				transform: translateY(-50%);
+          font-size: var(--text-sm);
+  			}
+
+  			&:nth-of-type(2n) span {
+  				display: none;
+  			}
+  		}
+  	}
+  }
+}
+
+.cd-schedule__events {
+	position: relative;
+	z-index: 1;
+  
+  .js & {
+  	@include breakpoint(md) {
+  		width: 100%;
+
+      > ul {
+        display: flex;
+        flex-wrap: nowrap;
+      }
+  	}
+
+  	@include breakpoint(lg) {
+  		width: calc(100% - 60px); // 60px is the .cd-schedule__timeline > li::after element left
+  		margin-left: 60px;
+  	}
+  }
+}
+
+.cd-schedule__group { // group of same day events
+  margin-bottom: var(--space-lg);
+  
+  .js & {
+    @include breakpoint(md) {
+      flex-basis: 0;
+      flex-grow: 1;
+      border: 1px solid var(--cd-color-border);
+      margin-bottom: 0; // reset style
+
+      &:not(:first-of-type) {
+        border-left-width: 0;
+      }
+    }
+  }
+}
+
+.cd-schedule__group > ul {
+  position: relative;
+  padding: 0 var(--component-padding);
+  display: flex;
+  overflow-x: scroll;
+  -webkit-overflow-scrolling: touch;
+
+  &::after { // never visible - used to add a right padding to .cd-schedule__group > ul
+    display: inline-block;
+    content: '-';
+    width: 1px;
+    height: 100%;
+    opacity: 0;
+    color: transparent;
+  }
+  
+  .js & {
+    @include breakpoint(md) {
+      height: calc(var(--schedule-rows-height)*var(--schedule-rows-number));
+      overflow: visible;
+      padding: 0;
+
+      &::after { // reset style
+        display: none;
+      }
+    }
+  }
+}
+
+.cd-schedule__top-info { // day label
+  width: 100%;
+  padding: 0 var(--component-padding);
+
+  > span {
+    display: inline-block;
+    margin-bottom: var(--space-sm);
+    font-weight: bold;
+  }
+  
+  .js & {
+    @include breakpoint(md) {
+      // vertically center its content
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: var(--schedule-rows-height);
+      border-bottom: 1px solid var(--cd-color-border);
+      padding: 0; // reset style
+
+      > span {
+        font-weight: normal;
+        font-size: var(--text-sm);
+        margin-bottom: 0;
+      } 
+    }
+  }
+}
+
+.cd-schedule__event {
+  flex-shrink: 0; // force them to stay on one line
+  float: left; // flex fallback
+  height: 150px;
+  width: 70%;
+  max-width: 300px;
+  margin-right: var(--space-md);
+  transition: opacity .2s, background .2s;
+  
+  a {
+    display: block;
+    height: 100%;
+    padding: var(--space-sm);
+    box-shadow: inset 0 -3px 0 rgba(#000, .2);
+    text-decoration: none;
+  }
+
+  a::before { // event start/end date
+    content: attr(data-start)' - 'attr(data-end);
+  }
+  
+  .js & {
+    @include breakpoint(sm) {
+      width: 40%;
+    }
+
+    @include breakpoint(md) {
+      position: absolute;
+      z-index: 3;
+      width: calc(100% + 2px); // top position and height will be set using js
+      left: -1px;
+      max-width: none; // reset style
+      margin-right: 0;
+
+      a {
+        padding: var(--space-sm);
+        box-shadow: 0 10px 20px rgba(#000, .1), inset 0 -3px 0 rgba(#000, .2);
+      }
+    }
+  }
+}
+
+.js {
+  @include breakpoint(md) {
+    .cd-schedule__event--selected { // classes added when an user select the event
+      visibility: hidden;
+    }
+
+    .cd-schedule--loading .cd-schedule__event {
+    	// the class .cd-schedule--loading is added by default to the .cd-schedule element
+    	// it is removed as soon as the single events are placed in the schedule plan (using javascript)
+    	opacity: 0;
+    }
+  }
+}
+
+.cd-schedule__name, // event name in the schedule template
+.cd-schedule__event a::before, // event date in the schedule template
+.cd-schedule-modal__name, // event name in the modal element
+.cd-schedule-modal__date { // event date in the modal element
+	display: block;
+	color: var(--color-white);
+	font-weight: bold;
+	@include fontSmooth;
+}
+
+.cd-schedule__name,
+.cd-schedule-modal__name {
+	font-size: var(--text-lg);
+
+  @include breakpoint(md) {
+    font-size: calc(var(--text-sm)*1.2);
+  }
+}
+
+.cd-schedule-modal__date, // not included in the the HTML but added using JavScript
+.cd-schedule__event a::before { 
+	opacity: .7;
+	margin-bottom: var(--space-xxxs);
+
+  @include breakpoint(md) {
+    font-size: calc(var(--text-xs)*1.05);
+    margin-bottom: var(--space-xxxxs);
+  }
+}
+
+.cd-schedule__event [data-event="event-1"],
+.cd-schedule-modal[data-event="event-1"] .cd-schedule-modal__header-bg {
+	// this is used to set a background color for the event and the modal window
+	background: var(--cd-color-event-1);
+}
+
+.cd-schedule__event [data-event="event-2"],
+.cd-schedule-modal[data-event="event-2"] .cd-schedule-modal__header-bg {
+	background: var(--cd-color-event-2);
+}
+
+.cd-schedule__event [data-event="event-3"],
+.cd-schedule-modal[data-event="event-3"] .cd-schedule-modal__header-bg {
+	background: var(--cd-color-event-3);
+}
+
+.cd-schedule__event [data-event="event-4"],
+.cd-schedule-modal[data-event="event-4"] .cd-schedule-modal__header-bg {
+	background: var(--cd-color-event-4);
+}
+
+.cd-schedule-modal {
+	position: fixed;
+	z-index: 3;
+	top: 0;
+	right: 0;
+	height: 100%;
+	width: 100%;
+	visibility: hidden;
+	transform: translateZ(0); // Force Hardware acceleration
+
+	transform: translateX(100%);
+	transition: transform .4s, visibility .4s;
+	transition-timing-function: cubic-bezier(.5,0,.1,1);
+
+	@include breakpoint(md) {
+		// reset style
+		right: auto;
+		width: auto;
+		height: auto;
+		transform: translateX(0);
+		will-change: transform, width, height;
+		transition: height .4s, width .4s, transform .4s, visibility .4s;
+		transition-timing-function: cubic-bezier(.5,0,.1,1);
+	}
+}
+
+.cd-schedule-modal__header {
+  position: relative;
+  height: 70px;
+  display: flex;
+  align-content: center;
+  width: 100%;
+
+  @include breakpoint(md) {
+    position: absolute;
+    display: block;
+    top: 0;
+    left: 0;
+    height: 100%;
+  }
+}
+
+.cd-schedule-modal__content {
+  position: relative;
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  padding: var(--space-sm) var(--component-padding);
+
+  @include breakpoint(md) {
+    // reset style
+    display: block;
+    padding: var(--space-sm);
+  }
+}
+
+.cd-schedule-modal__body {
+  position: relative;
+  width: 100%;
+  height: calc(100% - 70px); // 70px is the .cd-schedule-modal__header height
+
+  @include breakpoint(md) {
+    height: 100%;
+    width: auto;
+  }
+}
+
+.cd-schedule-modal__event-info {
+  position: relative;
+  z-index: 2;
+  line-height: var(--body-line-height);
+  height: 100%;
+  overflow: hidden;
+  font-size: calc(var(--text-sm) * 1.2);
+
+  > div {
+    overflow: auto;
+    height: 100%;
+    padding: var(--space-md) var(--component-padding);
+  }
+
+  @include breakpoint(md) {
+    opacity: 0;
+    font-size: var(--text-sm);
+
+    > div {
+      padding: calc(var(--space-md)*1.3) calc(var(--space-lg)*1.2) calc(var(--space-md)*1.3) calc(var(--space-md)*1.3);
+    }
+  }
+}
+
+.cd-schedule-modal__header-bg, 
+.cd-schedule-modal__body-bg { // these are the morphing backgrounds - visible on desktop only
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 100%;
+  
+  @include breakpoint(md) {
+    // Force Hardware acceleration
+    transform: translateZ(0);
+    will-change: transform;
+    backface-visibility: hidden;
+  }
+}
+
+.cd-schedule-modal__header-bg {
+  z-index: 2;
+  transform-origin: top center;
+  
+  @include breakpoint(md) {
+    transition: transform .4s;
+    transition-timing-function: cubic-bezier(.5,0,.1,1);
+  }
+}
+
+.cd-schedule-modal__body-bg {
+  z-index: 1;
+  background: var(--color-white);
+  transform-origin: top left;
+
+  @include breakpoint(md) {
+    opacity: 0;
+    transform: none;
+  }
+}
+
+.cd-schedule-modal--no-transition {
+  transition: none;
+
+  .cd-schedule-modal__header-bg, 
+  .cd-schedule-modal__body-bg {
+    transition: none !important;
+  }
+}
+
+.cd-schedule-modal__date {
+  display: none;
+
+  @include breakpoint(md) {
+    display: block;
+  }
+}
+
+.cd-schedule-modal__close { // close modal icon
+  position: absolute;
+  z-index: 3;
+  top: 0;
+  right: 0;
+  height: 70px;
+  width: 70px;
+  background: alpha(var(--color-black), .1);
+
+  &::before, &::after { // these are the two lines of the 'X' icon
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 2px;
+    height: 22px;
+    background: var(--color-white);
+    backface-visibility: hidden;
+  }
+
+  &::before {
+    transform: translateX(-50%) translateY(-50%) rotate(45deg);
+  }
+
+  &::after {
+    transform: translateX(-50%) translateY(-50%) rotate(-45deg);
+  }
+
+  @include breakpoint(md) {
+    width: 40px;
+    height: 40px;
+    background: transparent;
+    opacity: 0;
+
+    &::after, &::before {
+      background: var(--cd-color-text);
+      height: 16px;
+    }
+  }
+}
+
+.cd-schedule-modal--open { // this class is added as soon as an event is selected
+	transform: translateX(0);
+	visibility: visible;
+
+	.cd-schedule-modal__event-info > div { // smooth scroll on iOS touch deviceS
+		-webkit-overflow-scrolling: touch;
+	}
+}
+
+@include breakpoint(md) {
+	.cd-schedule-modal--animation-completed  .cd-schedule-modal__close,
+	.cd-schedule-modal--content-loaded.cd-schedule-modal--animation-completed  .cd-schedule-modal__event-info {
+		// 	the .cd-schedule-modal--animation-completed class is added when the modal animation is completed
+		//	the .cd-schedule-modal--content-loaded class is added when the modal content has been loaded (using ajax)
+		opacity: 1;
+		transition: opacity .2s;
+	}
+
+	.cd-schedule-modal--open .cd-schedule-modal__body-bg {
+		opacity: 1;
+		transition: transform .4s;
+		transition-timing-function: cubic-bezier(.5,0,.1,1);
+	}
+}
+
+.cd-schedule__cover-layer { // layer between the content and the modal window
+	position: fixed;
+	z-index: 2;
+	top: 0;
+	left: 0;
+	height: 100%;
+	width: 100%;
+	background: alpha(var(--color-black), 0.8);
+	opacity: 0;
+	visibility: hidden;
+	transition: opacity .4s, visibility .4s;
+}
+
+.cd-schedule-modal--open + .cd-schedule__cover-layer {
+	opacity: 1;
+	visibility: visible;
+}
+
+//demo style
+.cd-main-header h1 {
+  color: var(--cd-color-text);
+  font-weight: 700;
+}
+
+.cd-article-link {
+  font-size: var(--text-sm);
+  transition: opacity .2s;
+
+  &:hover {
+    opacity: 0.8;
+  }
+}
