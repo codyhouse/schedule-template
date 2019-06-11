@@ -1,4 +1,4 @@
-@import '../../../../codyhouse-framework/main/assets/css/_global.scss'; // ⚠️ make sure to import the CodyHouse framework
+@import '../../../../../codyhouse-framework/main/assets/css/style.scss'; // ⚠️ make sure to import the CodyHouse framework
 @import url('https://fonts.googleapis.com/css?family=Source+Sans+Pro:400,600'); // custom font
 
 // --------------------------------
@@ -45,7 +45,7 @@ a {
       width: calc(100% - 2*var(--component-padding));
       margin-left: auto;
       margin-right: auto;
-      max-width: var(--container-width-xl);
+      max-width: var(--max-width-xl);
 
   		&::before {
   			content: 'desktop';
