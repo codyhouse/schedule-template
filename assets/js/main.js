@@ -25,6 +25,8 @@
 		this.animating = false;
 		this.supportAnimation = Util.cssSupports('transition');
 
+		this.eventPath = 'events/';
+
 		this.initSchedule();
 	};
 
@@ -301,7 +303,7 @@
 	      }
 	    }
 		};
-		httpRequest.open('GET', content+'.html');
+		httpRequest.open('GET', self.eventPath+content+'.html');
     httpRequest.send();
 	};
 
